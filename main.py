@@ -5,6 +5,7 @@ import cv2 as cv
 import numpy as np
 from HomepageUI import Ui_MainWindow
 
+
 class MyWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
