@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5 import QtWidgets, QtGui, QtCore
 import cv2 as cv
+import cv2
 import numpy as np
 from HomepageUI import Ui_MainWindow
 
@@ -12,7 +13,7 @@ class MyWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        # Connect buttons to their respective functions
+        
         self.ui.imageAddButton.clicked.connect(self.openImageDialog)
         self.ui.bulaniklastirmaButton.clicked.connect(self.applyBlur)
         self.ui.histogramButton.clicked.connect(self.applyHistogram)
@@ -20,9 +21,14 @@ class MyWindow(QtWidgets.QMainWindow):
         self.ui.trasholdingButton.clicked.connect(self.applyThresholding)  
         self.ui.otsutrasholdingButton.clicked.connect(self.applyOtsuThresholding) 
         self.ui.gamaButton.clicked.connect(self.applyGammaCorrection)  
+        self.ui.pushButton_19.clicked.connect(self.applyCannyEdgeDetection) 
+        self.ui.pushButton_20.clicked.connect(self.applyHarrisCornerDetection) 
+        self.ui.pushButton_21.clicked.connect(self.applyCornerDetectionWithContours) 
+        self.ui.resimdisikenarlikButton.clicked.connect(self.applyOuterEdgeDetection) 
+        self.ui.dericheButton.clicked.connect(self.applyDericheEdgeDetection)
+        self.ui.cannykenarButton.clicked.connect(self.applySobelEdgeDetection)
 
-
-        # QLabel to show the image
+       
         self.ui.imageClear = QtWidgets.QLabel(self.ui.centralwidget)
         self.ui.imageClear.setGeometry(QtCore.QRect(486, 330, 281, 141))
         self.ui.imageClear.setFrameShape(QtWidgets.QFrame.Box)
@@ -30,7 +36,7 @@ class MyWindow(QtWidgets.QMainWindow):
         self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
         self.ui.imageClear.setObjectName("imageClear")
 
-        # Variables to store original, blurred, equalized, sharpened, thresholded, and Otsu thresholded images
+        
         self.original_image = None
         self.blurred_image = None
         self.equalized_image = None
@@ -46,7 +52,7 @@ class MyWindow(QtWidgets.QMainWindow):
         fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Resim Seç", "", "Resim Dosyaları (*.png; *.jpg; *.jpeg; *.bmp);;Tüm Dosyalar (*)", options=options)
 
         if fileName:
-            # Show the selected image
+            
             self.showImage(fileName)
 
     def showImage(self, imagePath):
@@ -58,24 +64,24 @@ class MyWindow(QtWidgets.QMainWindow):
         qImg = QtGui.QImage(input_image.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
         pixmap_image = QtGui.QPixmap.fromImage(qImg)
 
-        # Display the image in the imageUpload QLabel
+        
         self.ui.imageUpload.setPixmap(pixmap_image.scaled(self.ui.imageUpload.width(), self.ui.imageUpload.height(), QtCore.Qt.KeepAspectRatio))
         self.ui.imageUpload.setAlignment(QtCore.Qt.AlignCenter)
         self.ui.imageUpload.setScaledContents(True)
 
     def applyBlur(self):
         if self.original_image is not None:
-            # Apply a blur effect using OpenCV directly on the original image
+            
             blurred_img = cv.GaussianBlur(self.original_image, (5, 5), 0)
             self.blurred_image = blurred_img.copy()
 
-            # Convert the numpy array to QPixmap and update the displayed image with the blurred version
+           
             height, width, channel = blurred_img.shape
             bytesPerLine = 3 * width
             qImg_blurred = QtGui.QImage(blurred_img.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
             pixmap_blurred = QtGui.QPixmap.fromImage(qImg_blurred)
 
-            # Display the blurred image in the imageClear QLabel
+            
             self.ui.imageClear.setPixmap(pixmap_blurred.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
             self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
             self.ui.imageClear.setScaledContents(True)
@@ -84,20 +90,20 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def applyHistogram(self):
         if self.original_image is not None:
-            # Convert the image to grayscale
+            
             gray_img = cv.cvtColor(self.original_image, cv.COLOR_BGR2GRAY)
 
-            # Apply histogram equalization
+            
             equalized_img = cv.equalizeHist(gray_img)
             self.equalized_image = equalized_img.copy()
 
-            # Convert the numpy array to QPixmap and update the displayed image with the equalized version
+            
             height, width = equalized_img.shape
             bytesPerLine = 1 * width
             qImg_equalized = QtGui.QImage(equalized_img.data, width, height, bytesPerLine, QtGui.QImage.Format_Grayscale8)
             pixmap_equalized = QtGui.QPixmap.fromImage(qImg_equalized)
 
-            # Display the equalized image in the imageClear QLabel
+            
             self.ui.imageClear.setPixmap(pixmap_equalized.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
             self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
             self.ui.imageClear.setScaledContents(True)
@@ -106,17 +112,17 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def applySharpen(self):
         if self.original_image is not None:
-            # Apply sharpening using OpenCV directly on the original image
+            
             sharpened_img = cv.filter2D(self.original_image, -1, np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]]))
             self.sharpened_image = sharpened_img.copy()
 
-            # Convert the numpy array to QPixmap and update the displayed image with the sharpened version
+            
             height, width, channel = sharpened_img.shape
             bytesPerLine = 3 * width
             qImg_sharpened = QtGui.QImage(sharpened_img.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
             pixmap_sharpened = QtGui.QPixmap.fromImage(qImg_sharpened)
 
-            # Display the sharpened image in the imageClear QLabel
+           
             self.ui.imageClear.setPixmap(pixmap_sharpened.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
             self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
             self.ui.imageClear.setScaledContents(True)
@@ -125,20 +131,20 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def applyThresholding(self):
         if self.original_image is not None:
-            # Convert the image to grayscale
+            
             gray_img = cv.cvtColor(self.original_image, cv.COLOR_BGR2GRAY)
 
-            # Apply thresholding
+            
             _, thresholded_img = cv.threshold(gray_img, 127, 255, cv.THRESH_BINARY)
             self.thresholded_image = thresholded_img.copy()
 
-            # Convert the numpy array to QPixmap and update the displayed image with the thresholded version
+           
             height, width = thresholded_img.shape
             bytesPerLine = 1 * width
             qImg_thresholded = QtGui.QImage(thresholded_img.data, width, height, bytesPerLine, QtGui.QImage.Format_Grayscale8)
             pixmap_thresholded = QtGui.QPixmap.fromImage(qImg_thresholded)
 
-            # Display the thresholded image in the imageClear QLabel
+            
             self.ui.imageClear.setPixmap(pixmap_thresholded.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
             self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
             self.ui.imageClear.setScaledContents(True)
@@ -147,20 +153,20 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def applyOtsuThresholding(self):
         if self.original_image is not None:
-            # Convert the image to grayscale
+            
             gray_img = cv.cvtColor(self.original_image, cv.COLOR_BGR2GRAY)
 
-            # Apply Otsu's thresholding
+            
             _, otsu_thresholded_img = cv.threshold(gray_img, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
             self.otsu_thresholded_image = otsu_thresholded_img.copy()
 
-            # Convert the numpy array to QPixmap and update the displayed image with the Otsu thresholded version
+           
             height, width = otsu_thresholded_img.shape
             bytesPerLine = 1 * width
             qImg_otsu_thresholded = QtGui.QImage(otsu_thresholded_img.data, width, height, bytesPerLine, QtGui.QImage.Format_Grayscale8)
             pixmap_otsu_thresholded = QtGui.QPixmap.fromImage(qImg_otsu_thresholded)
 
-            # Display the Otsu thresholded image in the imageClear QLabel
+            
             self.ui.imageClear.setPixmap(pixmap_otsu_thresholded.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
             self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
             self.ui.imageClear.setScaledContents(True)
@@ -168,25 +174,212 @@ class MyWindow(QtWidgets.QMainWindow):
             print("Lütfen önce bir resim ekleyin.")
 
     def applyGammaCorrection(self):
-        gamma = 1.5  # You can adjust the gamma value
+        gamma = 1.5 
         if self.original_image is not None:
-            # Apply gamma correction
+           
             gamma_corrected_img = np.power(self.original_image / float(np.max(self.original_image)), gamma)
             gamma_corrected_img = (gamma_corrected_img * 255).astype(np.uint8)
             self.gamma_corrected_image = gamma_corrected_img.copy()
 
-            # Convert the numpy array to QPixmap and update the displayed image with the gamma-corrected version
+            
             height, width, channel = gamma_corrected_img.shape
             bytesPerLine = 3 * width
             qImg_gamma_corrected = QtGui.QImage(gamma_corrected_img.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
             pixmap_gamma_corrected = QtGui.QPixmap.fromImage(qImg_gamma_corrected)
 
-            # Display the gamma-corrected image in the imageClear QLabel
+            
             self.ui.imageClear.setPixmap(pixmap_gamma_corrected.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
             self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
             self.ui.imageClear.setScaledContents(True)
         else:
             print("Lütfen önce bir resim ekleyin.")
+
+            
+
+    def applyCannyEdgeDetection(self):
+     if self.original_image is not None:
+        
+        low_threshold = 50
+        high_threshold = 150
+
+        
+        gray_image = cv2.cvtColor(self.original_image, cv2.COLOR_RGB2GRAY)
+
+       
+        edges = cv2.Canny(gray_image, low_threshold, high_threshold)
+
+        
+        edges_rgb = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
+
+        
+        height, width, channel = edges_rgb.shape
+        bytesPerLine = 3 * width
+        qImg_edges = QtGui.QImage(edges_rgb.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
+        pixmap_edges = QtGui.QPixmap.fromImage(qImg_edges)
+
+        self.ui.imageClear.setPixmap(pixmap_edges.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
+        self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
+        self.ui.imageClear.setScaledContents(True)
+     else:
+      print("Lütfen önce bir resim ekleyin.")
+      
+
+    def applyHarrisCornerDetection(self):
+      if self.original_image is not None:
+        
+        gray_image = cv2.cvtColor(self.original_image, cv2.COLOR_RGB2GRAY)
+
+        
+        corners = cv2.cornerHarris(gray_image, blockSize=2, ksize=3, k=0.04)
+
+        
+        self.original_image[corners > 0.01 * corners.max()] = [0, 0, 255]  
+
+        
+        corners_rgb = cv2.cvtColor(self.original_image, cv2.COLOR_BGR2RGB)
+
+        
+        height, width, channel = corners_rgb.shape
+        bytesPerLine = 3 * width
+        qImg_corners = QtGui.QImage(corners_rgb.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
+        pixmap_corners = QtGui.QPixmap.fromImage(qImg_corners)
+
+        self.ui.imageClear.setPixmap(pixmap_corners.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
+        self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
+        self.ui.imageClear.setScaledContents(True)
+      else:
+        print("Lütfen önce bir resim ekleyin.")
+       
+
+    def applyCornerDetectionWithContours(self):
+     if self.original_image is not None:
+       
+        gray_image = cv2.cvtColor(self.original_image, cv2.COLOR_RGB2GRAY)
+
+        
+        edges = cv2.Canny(gray_image, 50, 150)
+
+        
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+       
+        image_with_contours = self.original_image.copy()
+        cv2.drawContours(image_with_contours, contours, -1, (0, 255, 0), 2)  
+
+       
+        image_with_contours_rgb = cv2.cvtColor(image_with_contours, cv2.COLOR_BGR2RGB)
+
+        
+        height, width, channel = image_with_contours_rgb.shape
+        bytesPerLine = 3 * width
+        qImg_with_contours = QtGui.QImage(image_with_contours_rgb.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
+        pixmap_with_contours = QtGui.QPixmap.fromImage(qImg_with_contours)
+
+        self.ui.imageClear.setPixmap(pixmap_with_contours.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
+        self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
+        self.ui.imageClear.setScaledContents(True)
+     else:
+        print("Lütfen önce bir resim ekleyin.")
+
+
+
+    def applyOuterEdgeDetection(self):
+      if self.original_image is not None:
+       
+        gray_image = cv2.cvtColor(self.original_image, cv2.COLOR_RGB2GRAY)
+
+      
+        edges = cv2.Canny(gray_image, 50, 150)
+
+        
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+      
+        black_image = np.zeros_like(self.original_image)
+
+       
+        cv2.drawContours(black_image, contours, -1, (255, 255, 255), 2)  
+
+      
+        result_image = cv2.bitwise_and(self.original_image, black_image)
+
+        
+        result_image_rgb = cv2.cvtColor(result_image, cv2.COLOR_BGR2RGB)
+
+      
+        height, width, channel = result_image_rgb.shape
+        bytesPerLine = 3 * width
+        qImg_result = QtGui.QImage(result_image_rgb.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
+        pixmap_result = QtGui.QPixmap.fromImage(qImg_result)
+
+        self.ui.imageClear.setPixmap(pixmap_result.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
+        self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
+        self.ui.imageClear.setScaledContents(True)
+      else:
+        print("Lütfen önce bir resim ekleyin.")
+
+  
+
+    def applyDericheEdgeDetection(self):
+     if self.original_image is not None:
+        
+        gray_image = cv2.cvtColor(self.original_image, cv2.COLOR_RGB2GRAY)
+
+        
+        deriche_x = cv2.ximgproc.GradientDericheX(gray_image, alpha=1.0, omega=1.0)
+        deriche_y = cv2.ximgproc.GradientDericheY(gray_image, alpha=1.0, omega=1.0)
+        
+        
+        edges = cv2.magnitude(deriche_x, deriche_y)
+
+        
+        _, binary_edges = cv2.threshold(edges, 30, 255, cv2.THRESH_BINARY)
+
+        
+        binary_edges_rgb = cv2.cvtColor(binary_edges, cv2.COLOR_GRAY2RGB)
+
+        
+        height, width, channel = binary_edges_rgb.shape
+        bytesPerLine = 3 * width
+        qImg_binary_edges = QtGui.QImage(binary_edges_rgb.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
+        pixmap_binary_edges = QtGui.QPixmap.fromImage(qImg_binary_edges)
+
+        self.ui.imageClear.setPixmap(pixmap_binary_edges.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
+        self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
+        self.ui.imageClear.setScaledContents(True)
+     else:
+        print("Lütfen önce bir resim ekleyin.")
+
+    def applySobelEdgeDetection(self):
+     if self.original_image is not None:
+       
+        gray_image = cv2.cvtColor(self.original_image, cv2.COLOR_RGB2GRAY)
+
+        
+        sobel_x = cv2.Sobel(gray_image, cv2.CV_64F, 1, 0, ksize=3)
+        sobel_y = cv2.Sobel(gray_image, cv2.CV_64F, 0, 1, ksize=3)
+
+        
+        edges = cv2.magnitude(sobel_x, sobel_y)
+
+       
+        edges = np.uint8(edges)
+
+       
+        binary_edges_rgb = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
+
+        
+        height, width, channel = binary_edges_rgb.shape
+        bytesPerLine = 3 * width
+        qImg_binary_edges = QtGui.QImage(binary_edges_rgb.data, width, height, bytesPerLine, QtGui.QImage.Format_RGB888)
+        pixmap_binary_edges = QtGui.QPixmap.fromImage(qImg_binary_edges)
+
+        self.ui.imageClear.setPixmap(pixmap_binary_edges.scaled(self.ui.imageClear.width(), self.ui.imageClear.height(), QtCore.Qt.KeepAspectRatio))
+        self.ui.imageClear.setAlignment(QtCore.Qt.AlignCenter)
+        self.ui.imageClear.setScaledContents(True)
+     else:
+        print("Lütfen önce bir resim ekleyin.")
+    
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
